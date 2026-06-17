@@ -127,19 +127,25 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        user = User.query.filter_by(email=email).first()
-        
-        if user and check_password_hash(user.password, password):
-            # In dev mode, allow login without verification
-            if not app.config['DEV_MODE'] and not user.is_verified:
-                flash('Please verify your email before logging in.', 'warning')
-                return redirect(url_for('verify', email=email))
+        try:
+            user = User.query.filter_by(email=email).first()
             
-            login_user(user)
-            flash('Login successful!', 'success')
-            return redirect(url_for('index'))
-        else:
-            flash('Invalid email or password.', 'error')
+            if user and check_password_hash(user.password, password):
+                # In dev mode, allow login without verification
+                if not app.config['DEV_MODE'] and not user.is_verified:
+                    flash('Please verify your email before logging in.', 'warning')
+                    return redirect(url_for('verify', email=email))
+                
+                login_user(user)
+                flash('Login successful!', 'success')
+                return redirect(url_for('index'))
+            else:
+                flash('Invalid email or password.', 'error')
+        except Exception as e:
+            print(f"Login error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            flash(f'Login error: {str(e)}', 'error')
     
     return render_template('login.html')
 
@@ -150,65 +156,72 @@ def signup():
         return redirect(url_for('index'))
     
     if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        
-        # Validation
-        if not name or not email or not password:
-            flash('All fields are required.', 'error')
-            return render_template('signup.html')
-        
-        if password != confirm_password:
-            flash('Passwords do not match.', 'error')
-            return render_template('signup.html')
-        
-        if len(password) < 6:
-            flash('Password must be at least 6 characters long.', 'error')
-            return render_template('signup.html')
-        
-        # Check if user already exists
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            flash('Email already registered. Please login.', 'error')
-            return redirect(url_for('login'))
-        
-        # Create new user
-        verification_token = secrets.token_urlsafe(32)
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        
-        # In dev mode, auto-verify user
-        is_verified = app.config['DEV_MODE']
-        
-        new_user = User(
-            email=email,
-            password=hashed_password,
-            name=name,
-            verification_token=verification_token if not app.config['DEV_MODE'] else None,
-            is_verified=is_verified
-        )
-        
-        db.session.add(new_user)
-        db.session.commit()
-        
-        # Send verification email only if mail is enabled and not in dev mode
-        if app.config['MAIL_ENABLED'] and not app.config['DEV_MODE']:
-            try:
-                send_verification_email(email, verification_token)
-                flash('Registration successful! Please check your email to verify your account.', 'success')
-                return redirect(url_for('verify', email=email))
-            except Exception as e:
-                flash(f'Registration successful but email sending failed: {str(e)}', 'warning')
-                return redirect(url_for('verify', email=email))
-        else:
-            # In dev mode or if mail not configured
-            if app.config['DEV_MODE']:
-                flash('Registration successful! You can now login (Development Mode - Email Verification Skipped)', 'success')
+        try:
+            name = request.form.get('name')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+            
+            # Validation
+            if not name or not email or not password:
+                flash('All fields are required.', 'error')
+                return render_template('signup.html')
+            
+            if password != confirm_password:
+                flash('Passwords do not match.', 'error')
+                return render_template('signup.html')
+            
+            if len(password) < 6:
+                flash('Password must be at least 6 characters long.', 'error')
+                return render_template('signup.html')
+            
+            # Check if user already exists
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash('Email already registered. Please login.', 'error')
                 return redirect(url_for('login'))
+            
+            # Create new user
+            verification_token = secrets.token_urlsafe(32)
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+            
+            # In dev mode, auto-verify user
+            is_verified = app.config['DEV_MODE']
+            
+            new_user = User(
+                email=email,
+                password=hashed_password,
+                name=name,
+                verification_token=verification_token if not app.config['DEV_MODE'] else None,
+                is_verified=is_verified
+            )
+            
+            db.session.add(new_user)
+            db.session.commit()
+            
+            # Send verification email only if mail is enabled and not in dev mode
+            if app.config['MAIL_ENABLED'] and not app.config['DEV_MODE']:
+                try:
+                    send_verification_email(email, verification_token)
+                    flash('Registration successful! Please check your email to verify your account.', 'success')
+                    return redirect(url_for('verify', email=email))
+                except Exception as e:
+                    flash(f'Registration successful but email sending failed: {str(e)}', 'warning')
+                    return redirect(url_for('verify', email=email))
             else:
-                flash('Registration successful! Email verification is disabled. You can now login.', 'success')
-                return redirect(url_for('login'))
+                # In dev mode or if mail not configured
+                if app.config['DEV_MODE']:
+                    flash('Registration successful! You can now login (Development Mode - Email Verification Skipped)', 'success')
+                    return redirect(url_for('login'))
+                else:
+                    flash('Registration successful! Email verification is disabled. You can now login.', 'success')
+                    return redirect(url_for('login'))
+        except Exception as e:
+            print(f"Signup error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            flash(f'Signup error: {str(e)}', 'error')
+            return render_template('signup.html')
     
     return render_template('signup.html')
 
