@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - RetailIQ Dashboard</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-background">
+            <div class="auth-overlay"></div>
+        </div>
+        
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>RetailIQ</span>
+                </div>
+                <h1>Verify Your Email</h1>
+                <p>We've sent a verification link to your email address</p>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'warning' if category == 'warning' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'exclamation-triangle' if category == 'warning' else 'check-circle' if category == 'success' else 'info-circle' }}"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="verify-content">
+                <div class="verify-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                
+                <div class="verify-info">
+                    <h3>Check your inbox</h3>
+                    <p>We've sent a verification email to:</p>
+                    <p class="email-display">{{ email }}</p>
+                    <p>Click the link in the email to verify your account and access the dashboard.</p>
+                </div>
+                
+                <form method="POST" action="{{ url_for('resend_verification') }}" class="resend-form">
+                    <input type="hidden" name="email" value="{{ email }}">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-redo"></i>
+                        Resend Verification Email
+                    </button>
+                </form>
+                
+                <div class="verify-tips">
+                    <h4>Didn't receive the email?</h4>
+                    <ul>
+                        <li>Check your spam or junk folder</li>
+                        <li>Make sure the email address is correct</li>
+                        <li>Wait a few minutes for the email to arrive</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="auth-footer">
+                <p>Already verified? <a href="{{ url_for('login') }}">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

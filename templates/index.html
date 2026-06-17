@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetailIQ - AI-Powered Sales Forecasting Dashboard</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>RetailIQ</span>
+            </div>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item active">
+                <a href="#dashboard" class="menu-link">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#forecasting" class="menu-link">
+                    <i class="fas fa-brain"></i>
+                    <span>Forecasting</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#analytics" class="menu-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#reports" class="menu-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#about" class="menu-link">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{{ url_for('logout') }}" class="menu-link logout-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{{ current_user.name if current_user.is_authenticated else 'Guest' }}</p>
+                    <p class="user-role">{{ current_user.email if current_user.is_authenticated else 'Not Logged In' }}</p>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="globalSearch" placeholder="Search analytics, reports, products...">
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="notification">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </div>
+                <div class="header-profile">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Hero Section -->
+        <section class="hero-section" id="dashboard">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1 class="hero-title">AI-Powered Retail Sales Forecasting Dashboard</h1>
+                <p class="hero-subtitle">Transform historical retail data into actionable business insights and future sales predictions.</p>
+                <div class="hero-buttons">
+                    <a href="#forecasting" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket"></i>
+                        Start Forecasting
+                    </a>
+                    <a href="#analytics" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-chart-bar"></i>
+                        View Analytics
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- KPI Cards Section -->
+        <section class="kpi-section">
+            <div class="container-fluid">
+                <div class="row g-4">
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <div class="kpi-card">
+                            <div class="kpi-icon total-sales">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <p class="kpi-label">Total Sales</p>
+                                <h3 class="kpi-value" id="totalSales">₹0</h3>
+                                <div class="kpi-growth positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+12.5%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <div class="kpi-card">
+                            <div class="kpi-icon total-orders">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <p class="kpi-label">Total Orders</p>
+                                <h3 class="kpi-value" id="totalOrders">0</h3>
+                                <div class="kpi-growth positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+8.3%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <div class="kpi-card">
+                            <div class="kpi-icon average-sales">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <p class="kpi-label">Average Sales</p>
+                                <h3 class="kpi-value" id="averageSales">₹0</h3>
+                                <div class="kpi-growth positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+5.2%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <div class="kpi-card">
+                            <div class="kpi-icon highest-sale">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <p class="kpi-label">Highest Sale</p>
+                                <h3 class="kpi-value" id="highestSale">₹0</h3>
+                                <div class="kpi-growth positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+15.7%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Forecasting Section -->
+        <section class="forecasting-section" id="forecasting">
+            <div class="container-fluid">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-brain"></i>
+                        AI Sales Forecasting
+                    </h2>
+                    <p class="section-subtitle">Predict future sales using our machine learning model</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-5">
+                        <div class="forecast-form-card">
+                            <h3 class="card-title">Enter Sales Parameters</h3>
+                            <form id="predictionForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Product</label>
+                                            <select class="form-select" id="product" required>
+                                                <option value="">Select Product</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Category</label>
+                                            <select class="form-select" id="category" required>
+                                                <option value="">Select Category</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Region</label>
+                                            <select class="form-select" id="region" required>
+                                                <option value="">Select Region</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Quantity Sold</label>
+                                            <input type="number" class="form-control" id="quantitySold" min="1" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Unit Price (₹)</label>
+                                            <input type="number" class="form-control" id="unitPrice" min="0" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Discount (%)</label>
+                                            <input type="number" class="form-control" id="discount" min="0" max="100" step="1" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Date</label>
+                                            <input type="date" class="form-control" id="date" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <i class="fas fa-magic"></i>
+                                            Generate Prediction
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-7">
+                        <div class="prediction-result-card" id="predictionResult" style="display: none;">
+                            <div class="prediction-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-chart-area"></i>
+                                    Prediction Results
+                                </h3>
+                            </div>
+                            <div class="prediction-content">
+                                <div class="predicted-revenue">
+                                    <p class="label">Predicted Revenue</p>
+                                    <h2 class="value" id="predictedRevenue">₹0.00</h2>
+                                </div>
+                                
+                                <div class="prediction-metrics">
+                                    <div class="metric">
+                                        <div class="metric-icon">
+                                            <i class="fas fa-percentage"></i>
+                                        </div>
+                                        <div class="metric-content">
+                                            <p class="metric-label">Confidence</p>
+                                            <p class="metric-value" id="confidenceLevel">0%</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric">
+                                        <div class="metric-icon">
+                                            <i class="fas fa-info-circle"></i>
+                                        </div>
+                                        <div class="metric-content">
+                                            <p class="metric-label">Status</p>
+                                            <p class="metric-value success">High Accuracy</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="forecast-summary">
+                                    <p class="summary-text" id="forecastSummary">
+                                        Forecast summary will appear here.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="placeholder-card" id="predictionPlaceholder">
+                            <div class="placeholder-content">
+                                <i class="fas fa-robot"></i>
+                                <h3>AI Prediction Ready</h3>
+                                <p>Fill in the sales parameters on the left to generate an AI-powered sales forecast.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Analytics Section -->
+        <section class="analytics-section" id="analytics">
+            <div class="container-fluid">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Sales Analytics
+                    </h2>
+                    <p class="section-subtitle">Comprehensive insights into your retail performance</p>
+                </div>
+                
+                <div class="row g-4">
+                    <!-- Monthly Sales Trend -->
+                    <div class="col-xl-8 col-lg-12">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4 class="chart-title">Monthly Sales Trend</h4>
+                                <div class="chart-actions">
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="monthlySalesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Category Performance -->
+                    <div class="col-xl-4 col-lg-12">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4 class="chart-title">Category Performance</h4>
+                                <div class="chart-actions">
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Wise Revenue -->
+                    <div class="col-xl-6 col-lg-12">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4 class="chart-title">Product Wise Revenue</h4>
+                                <div class="chart-actions">
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="productChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Region Wise Sales -->
+                    <div class="col-xl-6 col-lg-12">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4 class="chart-title">Region Wise Sales</h4>
+                                <div class="chart-actions">
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="regionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sales Distribution -->
+                    <div class="col-xl-6 col-lg-12">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4 class="chart-title">Sales Distribution</h4>
+                                <div class="chart-actions">
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="distributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Revenue Growth -->
+                    <div class="col-xl-6 col-lg-12">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4 class="chart-title">Revenue Growth Analysis</h4>
+                                <div class="chart-actions">
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="growthChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Data Table Section -->
+        <section class="table-section" id="reports">
+            <div class="container-fluid">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-table"></i>
+                        Recent Transactions
+                    </h2>
+                    <p class="section-subtitle">View and analyze your latest sales transactions</p>
+                </div>
+                
+                <div class="table-card">
+                    <div class="table-header">
+                        <div class="table-search">
+                            <div class="search-input">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="tableSearch" placeholder="Search transactions...">
+                            </div>
+                        </div>
+                        <div class="table-actions">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-download"></i>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="transactionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Region</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Discount</th>
+                                    <th>Sales</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsBody">
+                                <!-- Data will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- About Section -->
+        <section class="about-section" id="about">
+            <div class="container-fluid">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        About RetailIQ
+                    </h2>
+                </div>
+                
+                <div class="about-content">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="about-card">
+                                <h3>Our Mission</h3>
+                                <p>RetailIQ leverages advanced machine learning algorithms to provide accurate sales forecasts and actionable business intelligence for retail operations. Our platform transforms complex data into clear, actionable insights.</p>
+                                
+                                <h4>Key Features</h4>
+                                <ul class="feature-list">
+                                    <li><i class="fas fa-check-circle"></i> AI-Powered Predictions</li>
+                                    <li><i class="fas fa-check-circle"></i> Real-Time Analytics</li>
+                                    <li><i class="fas fa-check-circle"></i> Interactive Dashboards</li>
+                                    <li><i class="fas fa-check-circle"></i> Comprehensive Reports</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <div class="about-card">
+                                <h3>Technology Stack</h3>
+                                <div class="tech-stack">
+                                    <div class="tech-item">
+                                        <span class="tech-name">Flask</span>
+                                        <span class="tech-desc">Backend Framework</span>
+                                    </div>
+                                    <div class="tech-item">
+                                        <span class="tech-name">Scikit-Learn</span>
+                                        <span class="tech-desc">Machine Learning</span>
+                                    </div>
+                                    <div class="tech-item">
+                                        <span class="tech-name">Pandas</span>
+                                        <span class="tech-desc">Data Processing</span>
+                                    </div>
+                                    <div class="tech-item">
+                                        <span class="tech-name">Chart.js</span>
+                                        <span class="tech-desc">Data Visualization</span>
+                                    </div>
+                                    <div class="tech-item">
+                                        <span class="tech-name">Bootstrap 5</span>
+                                        <span class="tech-desc">UI Framework</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container-fluid">
+                <div class="footer-content">
+                    <p>&copy; 2024 RetailIQ. All rights reserved. Built with precision for retail excellence.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
