@@ -695,6 +695,14 @@ function searchPageContent(searchTerm) {
     // Remove previous highlights
     $('.highlighted').removeClass('highlighted');
     
+    // Scroll to transactions section
+    const transactionsSection = $('#reports');
+    if (transactionsSection.length) {
+        $('html, body').animate({
+            scrollTop: transactionsSection.offset().top - 100
+        }, 500);
+    }
+    
     // Search in text content
     $('section').each(function() {
         const section = $(this);
@@ -702,12 +710,6 @@ function searchPageContent(searchTerm) {
         
         if (text.includes(searchTerm)) {
             section.show();
-            // Scroll to first match
-            if ($('.highlighted').length === 0) {
-                $('html, body').animate({
-                    scrollTop: section.offset().top - 100
-                }, 300);
-            }
         }
     });
 }
